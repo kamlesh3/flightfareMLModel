@@ -19,3 +19,11 @@ six
 virtualenv
 Werkzeug
 wincertstore
+matplotlib
+seaborn
+openpyxl
+plotly
+chart_studio
+cufflinks
+nbformat
+pickle-mixin
