@@ -27,3 +27,4 @@ chart_studio
 cufflinks
 nbformat
 pickle-mixin
+sklearn
