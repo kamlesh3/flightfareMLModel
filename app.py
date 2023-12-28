@@ -1,16 +1,18 @@
 from flask import Flask, request, render_template
 from flask_cors import cross_origin
+import sklearn
 import pickle
 import pandas as pd
 
 app = Flask(__name__)
-model = pickle.load(open('flight_rf.pkl','rb'))
+model = pickle.load(open("flight_rf.pkl", "rb"))
+
+
 
 @app.route("/")
 @cross_origin()
 def home():
     return render_template("home.html")
-
 
 @app.route("/predict", methods = ["GET", "POST"])
 @cross_origin()
@@ -19,8 +21,6 @@ def predict():
 
         # Date_of_Journey
         date_dep = request.form["Dep_Time"]
-        ## whatever date_depb we have  , first we have to convert it into date-time nature..
-        
         Journey_day = int(pd.to_datetime(date_dep, format="%Y-%m-%dT%H:%M").day)
         Journey_month = int(pd.to_datetime(date_dep, format ="%Y-%m-%dT%H:%M").month)
         # print("Journey Date : ",Journey_day, Journey_month)
@@ -48,10 +48,6 @@ def predict():
         # Airline
         # AIR ASIA = 0 (not in column)
         airline=request.form['airline']
-        
-        
-        ## applying One-hot encoding
-        ## if airline is Jet Airways then we are going to set it as 1 and all other by 0
         if(airline=='Jet Airways'):
             Jet_Airways = 1
             IndiGo = 0
@@ -89,7 +85,7 @@ def predict():
             Multiple_carriers_Premium_economy = 0
             Jet_Airways_Business = 0
             Vistara_Premium_economy = 0
-            Trujet = 0
+            Trujet = 0 
             
         elif (airline=='Multiple carriers'):
             Jet_Airways = 0
@@ -208,8 +204,19 @@ def predict():
             Vistara_Premium_economy = 0
             Trujet = 0
 
-     
-        # one-hot encoding for Source
+        # print(Jet_Airways,
+        #     IndiGo,
+        #     Air_India,
+        #     Multiple_carriers,
+        #     SpiceJet,
+        #     Vistara,
+        #     GoAir,
+        #     Multiple_carriers_Premium_economy,
+        #     Jet_Airways_Business,
+        #     Vistara_Premium_economy,
+        #     Trujet)
+
+        # Source
         # Banglore = 0 (not in column)
         Source = request.form["Source"]
         if (Source == 'Delhi'):
@@ -242,8 +249,12 @@ def predict():
             s_Mumbai = 0
             s_Chennai = 0
 
-  
-        # one-hot encoding for Destination
+        # print(s_Delhi,
+        #     s_Kolkata,
+        #     s_Mumbai,
+        #     s_Chennai)
+
+        # Destination
         # Banglore = 0 (not in column)
         Source = request.form["Destination"]
         if (Source == 'Cochin'):
@@ -288,8 +299,26 @@ def predict():
             d_Hyderabad = 0
             d_Kolkata = 0
 
+        # print(
+        #     d_Cochin,
+        #     d_Delhi,
+        #     d_New_Delhi,
+        #     d_Hyderabad,
+        #     d_Kolkata
+        # )
         
-        ## then we have to predict,so now we have to pass basically pass all our values
+
+    #     ['Total_Stops', 'Journey_day', 'Journey_month', 'Dep_hour',
+    #    'Dep_min', 'Arrival_hour', 'Arrival_min', 'Duration_hours',
+    #    'Duration_mins', 'Airline_Air India', 'Airline_GoAir', 'Airline_IndiGo',
+    #    'Airline_Jet Airways', 'Airline_Jet Airways Business',
+    #    'Airline_Multiple carriers',
+    #    'Airline_Multiple carriers Premium economy', 'Airline_SpiceJet',
+    #    'Airline_Trujet', 'Airline_Vistara', 'Airline_Vistara Premium economy',
+    #    'Source_Chennai', 'Source_Delhi', 'Source_Kolkata', 'Source_Mumbai',
+    #    'Destination_Cochin', 'Destination_Delhi', 'Destination_Hyderabad',
+    #    'Destination_Kolkata', 'Destination_New Delhi']
+        
         prediction=model.predict([[
             Total_stops,
             Journey_day,
@@ -321,14 +350,16 @@ def predict():
             d_Kolkata,
             d_New_Delhi
         ]])
-  ### once we get our prediction,we have to just round prediction /price value to the 2 places
+
         output=round(prediction[0],2)
 
-    ## then basically we are going to send this text on my home.html
         return render_template('home.html',prediction_text="Your Flight price is Rs. {}".format(output))
 
 
     return render_template("home.html")
+
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)
